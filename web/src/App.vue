@@ -1,0 +1,139 @@
+<template>
+  <div class="text-white mb-8">
+
+    <div class="data-input text-gray-800">
+      <vue-google-autocomplete
+        id="address"
+        classname="form-control w-full rounded-lg outline-none px-2 py-1"
+        placeholder="Location"
+        types="(cities)"
+
+        v-on:placechanged="getAddressData"
+      >
+      </vue-google-autocomplete>
+      <h6>{{address}}</h6>
+    </div>
+
+    <div class="weather-container font-sans w-128 max-w-lg overflow-hidden bg-gray-900 shadow mt-4 rounded-lg">
+
+      <div class="current-weather flex items-center justify-between px-6 py-8 ">
+        <div class="flex items-center">
+          <div>
+            <div class="text-6xl font-seminold">{{ currentTemperature.actual }}&degC</div>
+            <div>Feels like {{ currentTemperature.feels }} &degC</div>
+          </div>
+          <div class="mx-5">
+            <div class="font-semibold">{{ toUpper(currentTemperature.summary) }}</div>
+            <div>{{ location.name }}</div>
+          </div>
+        </div>
+        <div class="weather-icon">
+
+        </div>
+      </div><!--End current-weather-->
+
+      <div class="future-weather  bg-gray-800 px-6 py-4 overflow-hidden">
+        <div
+                v-for="(day, index) in daily"
+                :key="day.dt"
+                class="flex items-center"
+                :class="{ 'mt-2' : index > 0 }"
+                v-if="index < 5">
+          <div class="w-1/6 text-lg text-gray-200">{{ toDaysOfWeek(day.dt) }}</div>
+          <div class="w-4/6 px-4 flex items-center">
+            <div class="daily-icon">
+              <img :src="`https://openweathermap.org/img/wn/${day.weather[0].icon}@2x.png`">
+            </div>
+            <div class="ml-3">{{ toUpper(day.weather[0].description) }}</div>
+          </div>
+          <div class="w-1/6 text-right">
+            <div>{{ Math.round(day.temp.max) }} &degC</div>
+            <div>{{ Math.round(day.temp.min) }} &degC</div>
+          </div>
+        </div>
+      </div><!--End future-weather-->
+
+    </div>
+  </div>
+</template>
+
+<script>
+    import VueGoogleAutocomplete from 'vue-google-autocomplete'
+
+
+    export default {
+        components: { VueGoogleAutocomplete },
+
+        name: 'App',
+
+  // Algolia Places setup start
+  mounted() {
+    this.fetchData();
+
+  },
+  // Algolia Places setup end
+
+  watch: {
+    location: {
+      handler() {
+        this.fetchData();
+      },
+      deep: true
+    }
+  },
+  data() {
+    return {
+        address: '',
+      currentTemperature: {
+        actual: '',
+        feels: '',
+        summary: '',
+        icon: '',
+        dailyIcon: '',
+      },
+      daily: [],
+      location: {
+        name: 'Rimini',
+        lat: 44.0678288,
+        lon: 12.5695158,
+      }
+    }
+  },
+  methods: {
+      getAddressData: function (addressData) {
+         // console.log(id);
+       //   console.log(placeResultData);
+     //     this.address = addressData;
+          this.location.name=addressData.locality;
+          this.location.lon=addressData.longitude;
+          this.location.lat=addressData.latitude;
+      },
+      fetchData() {
+
+      fetch(`http://localhost:8080/weather?lat=${this.location.lat}&lon=${this.location.lon}`)
+              .then(response => response.json())
+              .then(data =>{
+              console.log('response',data)
+                this.currentTemperature.actual = Math.round(data.current.temp);
+                this.currentTemperature.feels = Math.round(data.current.feels_like);
+                this.currentTemperature.summary = data.current.weather[0].description;
+                this.currentTemperature.icon = data.current.weather[0].icon;
+                document.querySelector('.weather-icon').innerHTML = `<img src="https://openweathermap.org/img/wn/${this.currentTemperature.icon}@2x.png">`;
+                this.daily = data.daily;
+              });
+    },
+    toDaysOfWeek(timestamp) {
+      const newDate = new Date(timestamp*1000);
+      const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+      return days[newDate.getDay()];
+    },
+    toUpper(string) {
+      return string.charAt(0).toUpperCase() + string.substr(1);
+    }
+  }
+}
+</script>
+
+<style>
+
+</style>
