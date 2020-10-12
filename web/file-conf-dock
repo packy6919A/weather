@@ -1,0 +1,4 @@
+FROM node:12-alpine
+WORKDIR /Users/pasqualelongobardi/workDir/weather/web 	# Set the workdir a
+RUN npm install express					# Installa node_model ed express
+COPY . . 						# Copia tutti i file dall root del progetto a WORKDIR	
