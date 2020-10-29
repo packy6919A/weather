@@ -18,7 +18,7 @@ public class MLStreamer {
     static final String SOURCE_TOPIC = "sensor-data";
 
     public static void main(final String[] args) {
-        final String bootstrapServers = "localhost:9092";
+        final String bootstrapServers = System.getProperty("kafka_bootstrap","localhost:9092");
         final KafkaStreams streams = buildStream(bootstrapServers);
 
         streams.start();
