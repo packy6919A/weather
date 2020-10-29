@@ -8,13 +8,17 @@ const csv = require('csv-parser');
 const app = express();
 const port = process.env.PORT || 8088;
 let cors = require('cors')
+const kafka = require('kafka-node');
+const bp = require('body-parser');
+
+const external_host=process.env.EXTERNAL_HOST
 
 app.use(bodyParser.urlencoded({extended: false}));
 app.use(bodyParser.json());
 
 app.use(cors())
 const MongoClient = require('mongodb').MongoClient;
-const MONGODB_URI =  'mongodb://192.168.1.185:27017/'; // Utilizzo l'indirizzo IP fornito dal router invece di localhost
+const MONGODB_URI =  'mongodb://'+external_host+':27017/'; // Utilizzo l'indirizzo IP fornito dal router invece di localhost
 
 //let  apiURL="https://samples.openweathermap.org/storage/history_bulk.json?appid=b1b15e88fa797225412429c1c50c122a1"
 let cachedDb = null;
@@ -22,6 +26,35 @@ let cachedDb = null;
 app.use(bodyParser.json());
 
 let csvData = [];
+const Producer = kafka.Producer();
+const client = new kafka.KafkaClient({kafkaHost: external_host+':9092');
+const producer = new Producer(client);
+const kafka_topic = 'sensor-data';
+
+function sendData(data){
+  try {
+
+    producer.on('ready', async function() {
+      let push_status = producer.send(data, (err, data) => {
+        if (err) {
+          console.log('[kafka-producer -> '+external_host+']: broker update failed');
+        } else {
+          console.log('[kafka-producer -> '+external_host+']: broker update success');
+        }
+      });
+    });
+
+    producer.on('error', function(err) {
+      console.log(err);
+      console.log('[kafka-producer -> '+external_host+']: connection errored');
+      throw err;
+    });
+  }
+  catch(e) {
+    console.log(e);
+  }
+}
+
 function parseCSV(fileName){
   fs.createReadStream(fileName)
     .pipe(csv())
@@ -58,7 +91,7 @@ function queryDatabase (db, cityId) {
    // const dateObject = new Date();
    // const dt_iso = dateObject.toLocaleString("en-US", {timeZoneName: "short"});
     const dataunix = Date.parse((new Date()))/1000;
-   
+
     console.log('=> SYSDATE ==> ', dataunix);
 
     console.log('=> query database:' + cityId);
@@ -68,7 +101,7 @@ function queryDatabase (db, cityId) {
                    $and: [
                        {
                            data_time: {
-                               $gte: dataunix 
+                               $gte: dataunix
                            }
                        }
                    ]
@@ -100,7 +133,7 @@ app.get('/meteo', cors(), function(req, res) {
    */
 
   if(row == null){
-   const agent = new https.Agent({  
+   const agent = new https.Agent({
      rejectUnauthorized: false
     });
      // Leggo i risultati delle previsioni per i prossimi 7 giorni
@@ -110,6 +143,7 @@ app.get('/meteo', cors(), function(req, res) {
        )
        .then(function (response) {
            console.log('risposta è',response.data)
+           sendData(response.data)
            res.send(response.data);
        })
        .catch(function (error) {
