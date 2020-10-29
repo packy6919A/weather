@@ -14,6 +14,7 @@
     "express": "^4.17.1",
     "google": "^2.1.0",
     "googlemaps": "^1.12.0",
+     "kafka-node": "^5.0.0",
     "postcss": "^7.0.29",
     "tailwindcss": "^1.4.5",
     "vue": "^2.6.11",
