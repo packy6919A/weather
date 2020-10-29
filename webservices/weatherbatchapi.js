@@ -9,12 +9,12 @@ let fs = require("fs");
 const csv = require('csv-parser');
 
 const MongoClient = require('mongodb').MongoClient;
-const MONGODB_URI =  'mongodb://localhost:27017/weather'; // or Atlas connection string
+const MONGODB_URI =  'mongodb://192.168.1.185:27017/weather'; // or Atlas connection string
 
 let  apiURL="https://api.openweathermap.org/data/2.5/weather?appid=5691543b2216b21d681a7494e17e0be3&units=metric"
-let cachedDb = null;
+//let cachedDb = null;
 let csvData = [];
-let weatherArr=[]
+//let weatherArr=[]
 
 function parseCSV(fileName){
   fs.createReadStream(fileName)
@@ -114,4 +114,4 @@ function writeDatabase (json) {
 }
 
 console.log('Applicazione Avviata');
-parseCSV("/Users/pasqualelongobardi/workDir/weather/webservices/data.csv")
+parseCSV("/weather/webservices/data.csv")

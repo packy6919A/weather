@@ -1,16 +1,12 @@
 'use strict';
 
-/* npm install axios
-npm install mongodb --save
-*/
-
 const axios = require('axios');
 const console = require('console');
 let fs = require("fs");
 const csv = require('csv-parser');
 
 const MongoClient = require('mongodb').MongoClient;
-const MONGODB_URI =  'mongodb://localhost:27017/weather'; // or Atlas connection string
+const MONGODB_URI =  'mongodb://192.168.1.185:27017/weather'; // or Atlas connection string
 
 let  apiURL="https://samples.openweathermap.org/storage/history_bulk.json?appid=b1b15e88fa797225412429c1c50c122a1=metric"
 let cachedDb = null;

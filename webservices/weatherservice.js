@@ -14,7 +14,7 @@ app.use(bodyParser.json());
 
 app.use(cors())
 const MongoClient = require('mongodb').MongoClient;
-const MONGODB_URI =  'mongodb://localhost:27017/'; // or Atlas connection string
+const MONGODB_URI =  'mongodb://192.168.1.185:27017/'; // Utilizzo l'indirizzo IP fornito dal router invece di localhost
 
 //let  apiURL="https://samples.openweathermap.org/storage/history_bulk.json?appid=b1b15e88fa797225412429c1c50c122a1"
 let cachedDb = null;
@@ -55,8 +55,8 @@ function queryDatabase (db, cityId) {
     *  nella Query per estrarre tutte le previsioni metereologiche fatte per quella zona/citta di riferimento
     *  filtrando per il campo data_time sul database MONGODB
     * */
-    const dateObject = new Date();
-    const dt_iso = dateObject.toLocaleString("en-US", {timeZoneName: "short"});
+   // const dateObject = new Date();
+   // const dt_iso = dateObject.toLocaleString("en-US", {timeZoneName: "short"});
     const dataunix = Date.parse((new Date()))/1000;
    
     console.log('=> SYSDATE ==> ', dataunix);
@@ -74,7 +74,7 @@ function queryDatabase (db, cityId) {
                    ]
                 };
 
-     console.log("Query --> ", query);
+   //  console.log("Query --> ", query);
 
     // da modificare inserendo come collection quella che include le previsioni
 
@@ -91,9 +91,7 @@ function queryDatabase (db, cityId) {
 
 app.get('/meteo', cors(), function(req, res) {
     let query = req.body;
-
-
-  const row = csvData.find(it =>it.lat == query.lat && it.long == query.lon);
+    const row = csvData.find(it =>it.lat == query.lat && it.long == query.lon);
 
     console.log("Print query --> ", row);
 
@@ -145,7 +143,7 @@ app.route('/sensore').post(function (req, res) {
 });
 
 console.log("Il web Service è in esecuzione:")
-parseCSV("data.csv")
+parseCSV("/weather/webservices/data.csv")
 
 //let server = app.listen(port,()=>console.log(`Il server è stato avviato su http://localhost:8088`));
-app.listen(port,()=>console.log(`Il server è stato avviato su http://localhost:8088`));
+app.listen(port,()=>console.log(`Il server è stato avviato su http://192.168.1.185:8088`));
